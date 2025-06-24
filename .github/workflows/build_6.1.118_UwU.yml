@@ -16,17 +16,17 @@ on:
 #  schedule:
 #    - cron: '0 23 * * *'  # UTC时间23点（北京时间次日7点）
     inputs:
-      lz4k_enable:
+      lz4k_disable:
         description: '是否安装 LZ4KD 补丁'
-        required: flase
+        required: true
         type: choice
         default: 'flase'
         options:
           - 'true'
           - 'false'
-      lz4_enable:
+      lz4_disable:
         description: '是否安装 lz4 + zstd 补丁(和lz4kd可能冲突,二选一)'
-        required: flase
+        required: true
         type: choice
         default: 'flase'
         options:
@@ -34,7 +34,7 @@ on:
           - 'false'
       scx_enable:
         description: '是否安装风驰内核驱动(未完成)'
-        required: flase
+        required: true
         type: choice
         default: 'false'
         options:
@@ -42,7 +42,7 @@ on:
           - 'false'
       kernel_suffix:
         description: '内核后缀(留空默认,开头别加连字符)'
-        required: true
+        required: false
         type: string
         default: 'UwU'
 
