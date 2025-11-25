@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # ===== 设置自定义参数 =====
-echo "===== 欧加真SM8650通用6.1.118 A15 OKI内核本地编译脚本 By Coolapk@cctv18 ====="
+echo "===== 欧加真MT6897通用6.1.128 A15 (天玑特供)OKI内核本地编译脚本 By Coolapk@cctv18 ====="
 echo ">>> 读取用户配置..."
 MANIFEST=${MANIFEST:-oppo+oplus+realme}
 read -p "请输入自定义内核后缀（默认：android14-11-o-gca13bffobf09）: " CUSTOM_SUFFIX
@@ -21,8 +21,8 @@ read -p "是否应用 lz4 1.10.0 & zstd 1.5.7 补丁？(y/n，默认：y): " APP
 APPLY_LZ4=${APPLY_LZ4:-y}
 read -p "是否应用 lz4kd 补丁？(y/n，默认：n): " APPLY_LZ4KD
 APPLY_LZ4KD=${APPLY_LZ4KD:-n}
-read -p "是否启用网络功能增强优化配置？(y/n，默认：y): " APPLY_BETTERNET
-APPLY_BETTERNET=${APPLY_BETTERNET:-y}
+read -p "是否启用网络功能增强优化配置？(y/n，在天玑机型上可能导致bug,建议关闭;默认：n): " APPLY_BETTERNET
+APPLY_BETTERNET=${APPLY_BETTERNET:-n}
 read -p "是否添加 BBR 等一系列拥塞控制算法？(y添加/n禁用/d默认，默认：n): " APPLY_BBR
 APPLY_BBR=${APPLY_BBR:-n}
 read -p "是否启用三星SSG IO调度器？(y/n，默认：y): " APPLY_SSG
@@ -77,7 +77,7 @@ echo ">>> 初始化仓库..."
 rm -rf kernel_workspace
 mkdir kernel_workspace
 cd kernel_workspace
-git clone --depth=1 https://github.com/cctv18/android_kernel_common_oneplus_sm8650 -b oneplus/sm8650_v_15.0.0_oneplus12_6.1.118 common
+git clone --depth=1 https://github.com/cctv18/android_kernel_oneplus_mt6897 -b oneplus/mt6897_v_15.0.0_oneplus_pad common
 echo ">>> 初始化仓库完成"
 
 # ===== 清除 abi 文件、去除 -dirty 后缀 =====
@@ -140,6 +140,8 @@ if [[ "$KSU_BRANCH" == [yY] && "$APPLY_SUSFS" == [yY] ]]; then
   cp ./susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
   cd ./common
   patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
+  #临时修复task_mmu.c在部分内核版本补丁后找不到show_pad方法的问题
+  sed -i 's/goto show_pad;/return 0;/g' ./fs/proc/task_mmu.c
   patch -p1 -F 3 < 69_hide_stuff.patch || true
 elif [[ "$KSU_BRANCH" == [nN] && "$APPLY_SUSFS" == [yY] ]]; then
   git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1
@@ -153,6 +155,8 @@ elif [[ "$KSU_BRANCH" == [nN] && "$APPLY_SUSFS" == [yY] ]]; then
   cp ./kernel_patches/69_hide_stuff.patch ./common/
   cd ./common
   patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
+  #临时修复task_mmu.c在部分内核版本补丁后找不到show_pad方法的问题
+  sed -i 's/goto show_pad;/return 0;/g' ./fs/proc/task_mmu.c
   patch -p1 -N -F 3 < scope_min_manual_hooks_v1.5.patch || true
   patch -p1 -N -F 3 < 69_hide_stuff.patch || true
 elif [[ "$KSU_BRANCH" == [mM] && "$APPLY_SUSFS" == [yY] ]]; then
@@ -172,6 +176,8 @@ elif [[ "$KSU_BRANCH" == [mM] && "$APPLY_SUSFS" == [yY] ]]; then
   patch -p1 < fix_umount.patch || true
   cd ../common
   patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
+  #临时修复task_mmu.c在部分内核版本补丁后找不到show_pad方法的问题
+  sed -i 's/goto show_pad;/return 0;/g' ./fs/proc/task_mmu.c
   patch -p1 -N -F 3 < 69_hide_stuff.patch || true
 elif [[ "$KSU_BRANCH" == [kK] && "$APPLY_SUSFS" == [yY] ]]; then
   git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android14-6.1
@@ -187,6 +193,8 @@ elif [[ "$KSU_BRANCH" == [kK] && "$APPLY_SUSFS" == [yY] ]]; then
   patch -p1 < fix_umount.patch || true
   cd ../common
   patch -p1 < 50_add_susfs_in_gki-android14-6.1.patch || true
+  #临时修复task_mmu.c在部分内核版本补丁后找不到show_pad方法的问题
+  sed -i 's/goto show_pad;/return 0;/g' ./fs/proc/task_mmu.c
   patch -p1 -N -F 3 < 69_hide_stuff.patch || true
 else
   echo ">>> 未开启susfs，跳过susfs补丁配置..."
